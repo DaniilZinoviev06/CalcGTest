@@ -4,12 +4,15 @@ project(CalcGTest LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
+
 add_library(CalcLib
         ICalculator.h
         SimpleCalculator.h SimpleCalculator.cpp
         IHistory.h
         InMemoryHistory.h InMemoryHistory.cpp
 )
+
 
 include(FetchContent)
 FetchContent_Declare(
@@ -22,15 +25,25 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(unit_tests
-        tests/test_init.cpp
+        tests/history_tests.cpp
+        tests/calculator_tests.cpp
 )
 
 target_link_libraries(unit_tests
-        PRIVATE CalcLib GTest::gtest_main
+        PRIVATE CalcLib gmock GTest::gtest_main
 )
 
 include(GoogleTest)
 gtest_discover_tests(unit_tests)
+
+option(ENABLE_COVERAGE "Enable code coverage" OFF)
+
+if(ENABLE_COVERAGE)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        add_compile_options(--coverage -fprofile-arcs -ftest-coverage)
+        add_link_options(--coverage)
+    endif()
+endif()
 
 
 # add_executable(program program.cpp)
